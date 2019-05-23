@@ -20,9 +20,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/spf13/cobra"
 )
+
+var parseMode string
 
 var rootCmd = &cobra.Command{
 	Use:   "telegram-bot-cli",
@@ -52,6 +54,18 @@ A message
 		}
 
 		msg := tgbotapi.NewMessage(c, args[1])
+
+
+		if tgbotapi.ModeHTML == parseMode {
+			msg.ParseMode = tgbotapi.ModeHTML
+		} else if tgbotapi.ModeMarkdown == parseMode {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		} else if "" == parseMode {
+		} else {
+			fmt.Printf("Invalid parse mode provided %s. Must be either HTML or Markdown\n", parseMode)
+			os.Exit(1)
+		}
+
 		if _, err := bot.Send(msg); err != nil {
 			fmt.Printf("Failed to send a mesasge to channel. Err: %s\n", err.Error())
 			os.Exit(1)
@@ -69,4 +83,6 @@ func Execute() {
 func init() {
 	viper.SetEnvPrefix("telegram")
 	viper.AutomaticEnv()
+
+	rootCmd.Flags().StringVar(&parseMode, "parse-mode","", "Set if you want Telegram apps to show bold, italic, fixed-width text or inline URLs in your bot's message.")
 }
